@@ -6,7 +6,8 @@
   "root": "apps/gateway",
   "compilerOptions": {
     "webpack": true,
-    "tsConfigPath": "apps/gateway/tsconfig.app.json"
+    "tsConfigPath": "apps/gateway/tsconfig.app.json",
+    "assets": ["**/*.bin"]
   },
   "projects": {
     "gateway": {
@@ -42,7 +43,8 @@
       "entryFile": "main",
       "sourceRoot": "apps/devices/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/devices/tsconfig.app.json"
+        "tsConfigPath": "apps/devices/tsconfig.app.json",
+        "assets": ["**/*.json"]
       }
     },
     "common": {
