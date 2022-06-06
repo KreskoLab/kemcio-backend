@@ -2,6 +2,7 @@ import { RmqModule } from '@app/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppService } from './app.service';
+import { DevicesController } from './controllers/devices.controller';
 import { UsersController } from './controllers/users.controller';
 
 @Module({
@@ -12,8 +13,9 @@ import { UsersController } from './controllers/users.controller';
     }),
     RmqModule.register({ name: 'users' }),
     RmqModule.register({ name: 'auth' }),
+    RmqModule.register({ name: 'devices' }),
   ],
   providers: [AppService],
-  controllers: [UsersController],
+  controllers: [UsersController, DevicesController],
 })
 export class AppModule {}
