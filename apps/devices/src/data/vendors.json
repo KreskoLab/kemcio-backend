@@ -1,0 +1,55 @@
+[
+  {
+    "name": "Sonoff",
+    "slug": "sonoff",
+    "devices": [
+      {
+        "name": "Sonoff S20",
+        "slug": "sonoff-s20",
+        "value": "SONOFF_BASIC",
+        "type": "switch"
+      },
+
+      {
+        "name": "Sonoff S26",
+        "slug": "sonoff-s26",
+        "value": "SONOFF_BASIC",
+        "type": "switch"
+      },
+
+      {
+        "name": "Sonoff Basic",
+        "slug": "sonoff-basic",
+        "value": "SONOFF_BASIC",
+        "type": "switch"
+      },
+
+      {
+        "name": "Sonoff Basic R2",
+        "slug": "sonoff-basic-r2",
+        "value": "SONOFF_BASIC",
+        "type": "switch"
+      },
+
+      {
+        "name": "Sonoff B1",
+        "slug": "sonoff-b1",
+        "value": "SONOFF_B1",
+        "type": "bulb"
+      },
+
+      {
+        "name": "Sonoff Touch",
+        "slug": "sonoff-touch",
+        "value": "SONOFF_TOUCH",
+        "type": "switch"
+      }
+    ]
+  },
+
+  {
+    "name": "Tuya",
+    "slug": "tuya",
+    "devices": []
+  }
+]
