@@ -25,6 +25,7 @@ import { Device, DeviceSchema } from './schemas/device.schema';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('RABITMQ_URL'),
+        enableControllerDiscovery: true,
       }),
       inject: [ConfigService],
     }),
