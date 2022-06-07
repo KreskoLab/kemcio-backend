@@ -48,8 +48,15 @@
   },
 
   {
-    "name": "Tuya",
-    "slug": "tuya",
-    "devices": []
+    "name": "ESP 8266",
+    "slug": "esp8266",
+    "devices": [
+      {
+        "name": "DHT 11",
+        "slug": "dht11",
+        "value": "GENERIC",
+        "type": "sensor"
+      }
+    ]
   }
 ]
