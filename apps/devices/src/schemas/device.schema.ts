@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { DeviceMessageI } from '@app/common/interfaces/device-message.interface';
 
 export type DeviceDocument = Device & Document;
 
@@ -21,6 +22,9 @@ export class Device {
 
   @Prop({ required: false })
   online: boolean;
+
+  @Prop({ type: [] })
+  messages: DeviceMessageI[];
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);
