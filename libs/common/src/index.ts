@@ -10,4 +10,8 @@ export * from './interfaces/access-token.interface';
 export * from './interfaces/vendor.interface';
 export * from './interfaces/vendor-device.interface';
 export * from './interfaces/new-device.interface';
+export * from './interfaces/sse-topic.interface';
+export * from './interfaces/observer-message.interface';
+export * from './interfaces/message-data.interface';
+export * from './interfaces/device-message.interface';
 export * from './rmq/rmq.module';
