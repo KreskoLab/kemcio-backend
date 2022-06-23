@@ -43,6 +43,13 @@
         "slug": "sonoff-touch",
         "value": "SONOFF_TOUCH",
         "type": "switch"
+      },
+
+      {
+        "name": "Sonoff Slampher",
+        "slug": "sonoff-slampher",
+        "value": "SONOFF_BASIC",
+        "type": "switch"
       }
     ]
   },
@@ -55,7 +62,8 @@
         "name": "DHT 11",
         "slug": "dht11",
         "value": "GENERIC",
-        "type": "sensor"
+        "type": "sensor",
+        "gpio": "1184"
       }
     ]
   }
