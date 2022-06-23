@@ -3,9 +3,12 @@ import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { DataRepository } from './data.repository';
 import { DeviceRepository } from './device.repository';
 import { DevicesController } from './devices.controller';
 import { DevicesService } from './devices.service';
+import { ObserversService } from './observers.service';
+import { Data, DataSchema } from './schemas/data.schema';
 import { Device, DeviceSchema } from './schemas/device.schema';
 
 @Module({
@@ -20,6 +23,10 @@ import { Device, DeviceSchema } from './schemas/device.schema';
         name: Device.name,
         schema: DeviceSchema,
       },
+      {
+        name: Data.name,
+        schema: DataSchema,
+      },
     ]),
     RabbitMQModule.forRootAsync(RabbitMQModule, {
       imports: [ConfigModule],
@@ -31,6 +38,6 @@ import { Device, DeviceSchema } from './schemas/device.schema';
     }),
   ],
   controllers: [DevicesController],
-  providers: [DevicesService, DeviceRepository],
+  providers: [DevicesService, ObserversService, DeviceRepository, DataRepository],
 })
 export class DevicesModule {}
