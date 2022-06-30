@@ -1,15 +1,19 @@
-import { CreateDeviceDto, DeviceElements, MessageDataI } from '@app/common';
+import { CreateDeviceDto, DeviceElements, MessageData } from '@app/common';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Device, DeviceDocument } from './schemas/device.schema';
+import { Device, DeviceDocument } from '../schemas/device.schema';
 
 @Injectable()
 export class DeviceRepository {
   constructor(@InjectModel(Device.name) private deviceModel: Model<DeviceDocument>) {}
 
-  async create(newDevice: CreateDeviceDto): Promise<Device> {
-    return this.deviceModel.create(newDevice);
+  async save(device: DeviceDocument) {
+    return device.save();
+  }
+
+  async create(newDevice: CreateDeviceDto): Promise<DeviceDocument> {
+    return new this.deviceModel(newDevice);
   }
 
   async findByTopic(deviceTopic: string): Promise<Device> {
@@ -56,7 +60,7 @@ export class DeviceRepository {
     ]);
   }
 
-  async replaceMesage(deviceTopic: string, message: MessageDataI[]): Promise<void> {
+  async replaceMesage(deviceTopic: string, message: MessageData[]): Promise<void> {
     const bulkDocs = [];
 
     message.forEach((item) =>
