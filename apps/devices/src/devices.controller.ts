@@ -1,13 +1,26 @@
-import { CreateDeviceDto, SseTopicI, VendorI } from '@app/common';
-import { RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
+import {
+  Command,
+  SensorMessage,
+  IncomingStateMsg,
+  Vendor,
+  StateMsg,
+  DeviceElements,
+  NewDeviceData,
+  NewDeviceId,
+  CreateDeviceDto,
+  UpdateWiFiDto,
+} from '@app/common';
+import { ackErrorHandler, RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { Controller } from '@nestjs/common';
 import { ConsumeMessage } from 'amqplib';
+import { firstValueFrom } from 'rxjs';
 import { DevicesService } from './devices.service';
+import { ObserversService } from './observers.service';
 import { Device } from './schemas/device.schema';
 
 @Controller()
 export class DevicesController {
-  constructor(private readonly devicesService: DevicesService) {}
+  constructor(private readonly devicesService: DevicesService, private readonly observersService: ObserversService) {}
 
   @RabbitRPC({
     exchange: 'amq.topic',
@@ -17,55 +30,167 @@ export class DevicesController {
       durable: false,
     },
   })
-  async rpcHandler({
-    pattern,
-    data,
-  }: {
-    pattern: string;
-    data: string & CreateDeviceDto;
-  }): Promise<VendorI[] | Device> {
+  async devicesHanlder({ pattern }: { pattern: string }): Promise<Vendor[] | Device[] | DeviceElements[]> {
     switch (pattern) {
       case 'vendors-list':
         return this.devicesService.vendorsList();
 
-      case 'add-device':
-        return this.devicesService.addDevice(data);
+      case 'devices':
+        return this.devicesService.getDevices();
+
+      case 'devices-elements':
+        return this.devicesService.getDevicesElements();
     }
   }
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices-add-observer',
+    queue: 'devices-new',
+    allowNonJsonMessages: true,
     queueOptions: {
       autoDelete: true,
       durable: false,
     },
   })
-  async addObserver({ data }: { data: SseTopicI }) {
-    this.devicesService.sseTopics.push(data);
+  async addDeviceHandler({
+    pattern,
+    data,
+  }: {
+    pattern: NewDeviceData['status'];
+    data: NewDeviceData;
+  }): Promise<NewDeviceId | string> {
+    switch (pattern) {
+      case 'init':
+        return this.devicesService.addDevice(data);
+
+      case 'flashed':
+        return this.devicesService.confirmNewDevice(data);
+
+      case 'aborted':
+        return this.devicesService.abortNewDevice(data);
+    }
   }
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices-remove-observer',
+    queue: 'devices-update',
     queueOptions: {
       autoDelete: true,
       durable: false,
     },
   })
-  async remvoeObserver({ data }: { data: string }) {
-    this.devicesService.removeObserver(data);
+  async devicesUpdateHandler({
+    pattern,
+    data,
+  }: {
+    pattern: 'update-device' | 'update-device-wifi';
+    data: { id: string; device?: CreateDeviceDto; wifi?: UpdateWiFiDto };
+  }): Promise<Device | string> {
+    if (pattern === 'update-device') {
+      return this.devicesService.updateDevice(data.id, data.device as CreateDeviceDto);
+    } else {
+      const cmd = Object.entries(data.wifi)
+        .map(([key, val]) => `${key} ${val}`)
+        .join('; ');
+
+      await this.devicesService.execCommand('backlog', cmd, data.id);
+      return 'ok';
+    }
+  }
+
+  @RabbitRPC({
+    exchange: 'amq.topic',
+    queue: 'devices-cmd',
+    queueOptions: {
+      autoDelete: true,
+      durable: false,
+    },
+  })
+  async devicesCmdHandler({ data }: { data: Command }): Promise<string> {
+    const cmdValue = typeof data.value === 'string' ? data.value : String(data.value);
+
+    await this.devicesService.execCommand(data.name, cmdValue, data.topicId);
+    return 'ok';
+  }
+
+  @RabbitRPC({
+    exchange: 'amq.topic',
+    queue: 'devices-add-remove-observer',
+    queueOptions: {
+      autoDelete: true,
+      durable: false,
+    },
+    allowNonJsonMessages: true,
+  })
+  async addObserver({ pattern, data }: { pattern: 'add' | 'remove'; data: string }) {
+    switch (pattern) {
+      case 'add':
+        this.observersService.addObserver(data);
+        break;
+
+      case 'remove':
+        this.observersService.removeObserver(data);
+        break;
+    }
+  }
+
+  @RabbitRPC({
+    exchange: 'amq.topic',
+    queue: 'devices-remove',
+    queueOptions: {
+      autoDelete: true,
+      durable: false,
+    },
+    allowNonJsonMessages: true,
+  })
+  async removeDevice({ data }: { data: string }): Promise<string> {
+    return this.devicesService.removeDevice(data);
+  }
+
+  @RabbitRPC({
+    exchange: 'amq.topic',
+    queue: 'devices-element',
+    queueOptions: {
+      autoDelete: true,
+      durable: false,
+    },
+    allowNonJsonMessages: true,
+    errorHandler: ackErrorHandler,
+  })
+  async devicesElementHandler({ data }: { data: { id: string; element: string } }): Promise<string | number> {
+    const device = await this.devicesService.getDevice(data.id);
+
+    if (device && device.online && device.elements.find((item) => item.name === data.element)) {
+      const res = await this.devicesService.listenElement(device._id, device.gpio, data.element);
+      await this.devicesService.execCommand('Status', '8', device._id);
+
+      return firstValueFrom(res);
+    } else return 'error';
+  }
+
+  @RabbitRPC({
+    exchange: 'amq.topic',
+    queue: 'devices-wifi',
+    queueOptions: {
+      autoDelete: true,
+      durable: false,
+    },
+    allowNonJsonMessages: true,
+    errorHandler: ackErrorHandler,
+  })
+  async devicesWiFiHandler({ data }: { data: string }): Promise<any> {
+    const res = await this.devicesService.listenWiFi(data);
+    await this.devicesService.execCommand('Ssid', '', data);
+
+    return firstValueFrom(res);
   }
 
   @RabbitSubscribe({
     exchange: 'amq.topic',
-    routingKey: 'tele.*.LWT',
+    routingKey: 'tele.#.LWT',
     queue: 'devices-online',
     createQueueIfNotExists: true,
     allowNonJsonMessages: true,
-    queueOptions: {
-      autoDelete: true,
-    },
   })
   async pubSubHandler(msg: object, rawMessage: ConsumeMessage) {
     const deviceTopic = rawMessage.fields.routingKey.split('.')[1];
@@ -73,29 +198,58 @@ export class DevicesController {
 
     const status = content === 'Online' ? true : false;
 
-    try {
-      await this.devicesService.setDeviceStatus(deviceTopic, status);
-    } catch (error) {
-      console.log(error);
+    const handledMsg = this.devicesService.handleOnline(status);
+
+    if (this.observersService.observersExist()) {
+      this.observersService.sendToObservers(deviceTopic, JSON.stringify(handledMsg));
+    }
+
+    await this.devicesService.setDeviceStatus(deviceTopic, status);
+  }
+
+  @RabbitSubscribe({
+    exchange: 'amq.topic',
+    routingKey: 'tele.#.SENSOR',
+    queue: 'devices-sensors',
+    allowNonJsonMessages: true,
+  })
+  async sensorsHandler(msg: SensorMessage, rawMessage: ConsumeMessage) {
+    const deviceTopic = rawMessage.fields.routingKey.split('.')[1];
+    const deviceInterval = this.devicesService.getSensorInterval(deviceTopic);
+
+    if (deviceInterval && deviceInterval.ready) {
+      await this.devicesService.saveDataMessage(msg, deviceTopic, deviceInterval.gpio);
+      deviceInterval.ready = false;
+    }
+
+    if (this.observersService.observersExist()) {
+      const handledMsg = this.devicesService.handleSensorElements(msg, deviceInterval.gpio);
+      this.observersService.sendToObservers(deviceTopic, JSON.stringify(handledMsg));
     }
   }
 
   @RabbitSubscribe({
     exchange: 'amq.topic',
-    routingKey: 'stat.*.RESULT',
-    queue: 'devices-status',
+    routingKey: 'tele.#.STATE',
+    queue: 'devices-results',
     allowNonJsonMessages: true,
-    queueOptions: {
-      autoDelete: true,
-    },
   })
-  async competingPubSubHandler(msg: {}, rawMessage: ConsumeMessage) {
+  async testim(msg: IncomingStateMsg, rawMessage: ConsumeMessage) {
     const deviceTopic = rawMessage.fields.routingKey.split('.')[1];
 
-    await this.devicesService.saveMessage(msg, deviceTopic);
+    let state: Partial<StateMsg> = {
+      Color: '',
+      Dimmer: 0,
+      POWER: '',
+    };
 
-    if (this.devicesService.sseTopicExist(deviceTopic)) {
-      this.devicesService.sendToObservers(deviceTopic, JSON.stringify(msg));
+    state = Object.fromEntries(Object.entries(msg).filter(([key]) => Object.keys(state).includes(key)));
+
+    await this.devicesService.saveMessage(state, deviceTopic);
+
+    if (this.observersService.observersExist()) {
+      const handledMsg = this.devicesService.handleSwitchElements(state);
+      this.observersService.sendToObservers(deviceTopic, JSON.stringify(handledMsg));
     }
   }
 }
