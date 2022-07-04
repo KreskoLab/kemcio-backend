@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { TokensI } from '@app/common/interfaces/tokens.interfaces';
+import { Tokens } from '@app/common/interfaces/tokens.interfaces';
 import { v4 as uuidv4 } from 'uuid';
-import { TokenI } from '@app/common/interfaces/token.interface';
 import { AuthRepository } from './auth.repository';
 import { Token } from './schemas/token.schema';
+
+type JwtPayload = {
+  _id: string;
+};
 
 @Injectable()
 export class AuthService {
@@ -15,14 +18,14 @@ export class AuthService {
     private readonly authRepository: AuthRepository,
   ) {}
 
-  async generateAccessToken(payload: object): Promise<string> {
+  async generateAccessToken(payload: JwtPayload): Promise<string> {
     return this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
       expiresIn: this.configService.get<string>('ACCESS_TOKEN_LIFETIME'),
     });
   }
 
-  async generateRefreshToken(payload: object): Promise<string> {
+  async generateRefreshToken(payload: JwtPayload): Promise<string> {
     return this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
       expiresIn: this.configService.get<string>('REFRESH_TOKEN_LIFETIME'),
@@ -30,7 +33,7 @@ export class AuthService {
     });
   }
 
-  async generateTokens(payload: object): Promise<TokensI> {
+  async generateTokens(payload: JwtPayload): Promise<Tokens> {
     const [accessToken, refreshToken] = await Promise.all([
       this.generateAccessToken(payload),
       this.generateRefreshToken(payload),
@@ -63,7 +66,7 @@ export class AuthService {
     }
   }
 
-  async saveToken(token: TokenI): Promise<void> {
+  async saveToken(token: Token): Promise<void> {
     this.authRepository.updateOrCreate(token);
   }
 
@@ -71,16 +74,12 @@ export class AuthService {
     return this.authRepository.findByTokenId(tokenId);
   }
 
-  async deleteToken(tokenId: string): Promise<void> {
-    this.authRepository.remove(tokenId);
-  }
-
   getRefreshTokenId(token: string): string {
     const decoced = this.jwtService.decode(token);
     return decoced['jti'];
   }
 
-  decodeToken(token: string): any {
-    return this.jwtService.decode(token);
+  decodeToken(token: string): JwtPayload {
+    return this.jwtService.decode(token) as JwtPayload;
   }
 }

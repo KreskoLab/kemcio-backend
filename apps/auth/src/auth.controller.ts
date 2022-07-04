@@ -1,22 +1,20 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
-import { TokenI } from '@app/common/interfaces/token.interface';
-import { TokensI } from '@app/common/interfaces/tokens.interfaces';
-import { UserAndTokensI } from '@app/common/interfaces/user-tokens.interface';
-import { accessTokenI } from '@app/common';
+import { Tokens } from '@app/common/interfaces/tokens.interfaces';
+import { Token } from './schemas/token.schema';
 
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @MessagePattern({ cmd: 'auth-tokens' })
-  async authTokens(@Payload() data: UserAndTokensI): Promise<TokensI> {
-    const { accessToken, refreshToken } = await this.authService.generateTokens({ userId: data.userId });
+  async generateTokens(@Payload() data: { _id: string }): Promise<Tokens> {
+    const { accessToken, refreshToken } = await this.authService.generateTokens({ _id: data._id });
 
-    const token: TokenI = {
+    const token: Token = {
       tokenId: this.authService.getRefreshTokenId(refreshToken),
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     };
 
     await this.authService.saveToken(token);
@@ -25,44 +23,28 @@ export class AuthController {
   }
 
   @MessagePattern({ cmd: 'auth-verify-accessToken' })
-  async verifyAccessToken(@Payload() data: accessTokenI): Promise<string> {
+  async verifyAccessToken(@Payload() data: Pick<Tokens, 'accessToken'>): Promise<string> {
     const valid = await this.authService.verifyAccessToken(data.accessToken);
 
     if (valid) {
       const decodedToken = this.authService.decodeToken(data.accessToken);
-
-      return decodedToken.userId;
+      return decodedToken._id;
     } else throw new RpcException({ code: 403, msg: 'Unauthorized' });
   }
 
-  @MessagePattern({ cmd: 'auth-verifyTokens' })
-  async verifyTokens(@Payload() data: TokensI): Promise<UserAndTokensI> {
+  @MessagePattern({ cmd: 'auth-verify-refreshToken' })
+  async verifyTokens(@Payload() data: Tokens): Promise<Pick<Tokens, 'accessToken'>> {
     const validRefreshToken = await this.authService.verifyRefreshToken(data.refreshToken);
-    const accessRefreshToken = await this.authService.verifyAccessToken(data.accessToken);
 
     if (validRefreshToken) {
       const refreshTokenId = this.authService.getRefreshTokenId(data.refreshToken);
-      const token = await this.authService.findToken(refreshTokenId);
+      const tokenId = await this.authService.findToken(refreshTokenId);
 
-      if (token) {
-        const validAccessToken = await this.authService.verifyAccessToken(data.accessToken);
+      if (tokenId) {
+        const decodedRefreshToken = this.authService.decodeToken(data.refreshToken);
+        const newAccessToken = await this.authService.generateAccessToken({ _id: decodedRefreshToken._id });
 
-        if (validAccessToken) {
-          const decodedAccessToken = this.authService.decodeToken(data.accessToken);
-          return { userId: decodedAccessToken.id };
-        } else {
-          const decodedRefreshToken = this.authService.decodeToken(data.refreshToken);
-          const tokens: TokensI = await this.authService.generateTokens({ id: decodedRefreshToken.id });
-
-          const token: TokenI = {
-            tokenId: this.authService.getRefreshTokenId(tokens.refreshToken),
-            createdAt: new Date().toISOString(),
-          };
-
-          await this.authService.saveToken(token);
-
-          return { userId: decodedRefreshToken.id, tokens };
-        }
+        return { accessToken: newAccessToken };
       } else throw new RpcException({ code: 403, msg: 'Unauthorized' });
     } else throw new RpcException({ code: 403, msg: 'Unauthorized' });
   }
