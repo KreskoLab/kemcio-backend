@@ -1,17 +1,16 @@
-import { ObserverMessageI } from '@app/common';
+import { ObserverMessage } from '@app/common';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { Inject, Injectable, MessageEvent } from '@nestjs/common';
 import { ExternalContextCreator } from '@nestjs/core/helpers/external-context-creator';
 import { ClientProxy } from '@nestjs/microservices';
-import { filter, Observable, Subject } from 'rxjs';
+import { map, Observable, Subject } from 'rxjs';
 
 @Injectable()
 export class SseService {
   constructor(
     private readonly amqpService: AmqpConnection,
     private readonly externalContextCreator: ExternalContextCreator,
-    @Inject('devices-add-observer') private readonly addObserverService: ClientProxy,
-    @Inject('devices-remove-observer') private readonly removeObserverService: ClientProxy,
+    @Inject('devices-add-remove-observer') private readonly observersService: ClientProxy,
   ) {}
 
   onModuleInit() {
@@ -20,20 +19,24 @@ export class SseService {
 
   private subject = new Subject<MessageEvent>();
 
-  addMessage(msg: object, observerId: string): void {
-    this.subject.next({ data: msg, id: observerId });
+  addMessage(msg: object[] | object, deviceId: string): void {
+    if (Array.isArray(msg) && msg.length) {
+      this.subject.next({ data: msg, id: deviceId });
+    } else {
+      if (Object.keys(msg).length) this.subject.next({ data: msg, id: deviceId });
+    }
   }
 
-  send(observerId: string): Observable<MessageEvent> {
-    return this.subject.pipe(filter((msg) => msg.id === observerId));
+  send(): Observable<MessageEvent> {
+    return this.subject.pipe(map((msg) => msg));
   }
 
-  remove(observerId: string): void {
-    this.removeObserverService.emit('remove', observerId);
+  remove(id: string): void {
+    this.observersService.emit('remove', id);
   }
 
-  addObserver(topicId: string, observer: string): void {
-    this.addObserverService.emit('add', { topic: topicId, observerId: observer });
+  add(id: string): void {
+    this.observersService.emit('add', id);
   }
 
   private createQueue(): void {
@@ -53,7 +56,7 @@ export class SseService {
     );
   }
 
-  private messageHandler(msg: ObserverMessageI): void {
-    this.addMessage(JSON.parse(msg.data), msg.observerId);
+  private messageHandler(msg: ObserverMessage): void {
+    this.addMessage(JSON.parse(msg.data), msg.id);
   }
 }
