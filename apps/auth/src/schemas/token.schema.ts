@@ -3,11 +3,15 @@ import { Document } from 'mongoose';
 
 export type TokenDocument = Token & Document;
 
-@Schema({ versionKey: false })
+@Schema({
+  timeseries: { timeField: 'createdAt', granularity: 'minutes' },
+  expireAfterSeconds: 604800,
+  versionKey: false,
+})
 export class Token {
-  _id: string;
+  _id?: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, index: true })
   tokenId: string;
 
   @Prop({ required: true })
