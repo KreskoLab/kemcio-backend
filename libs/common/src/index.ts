@@ -35,6 +35,4 @@ export * from './enums/units';
 export * from './enums/nodes';
 export * from './enums/elements';
 
-export * from './functions/getKeyByName';
-
 export * from './rmq/rmq.module';
