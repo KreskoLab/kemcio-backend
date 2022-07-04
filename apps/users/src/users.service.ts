@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from '@app/common';
+import { CreateUserDto, UpdateUserDto } from '@app/common';
 import { UsersRepository } from './users.repository';
 import { LoginUserDto } from '@app/common';
 import { RpcException } from '@nestjs/microservices';
@@ -26,12 +26,29 @@ export class UsersService {
     }
   }
 
-  async registration(createUserDto: CreateUserDto): Promise<User> {
-    return this.userRepository.create({ ...createUserDto, password: await this.hashPassword(createUserDto.password) });
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const hashedPassword = await this.hashPassword(createUserDto.password);
+    return this.userRepository.create({ ...createUserDto, password: hashedPassword });
   }
 
   async getById(userId: string): Promise<User> {
     return this.userRepository.findById(userId);
+  }
+
+  async getAll(): Promise<User[]> {
+    return this.userRepository.findAll();
+  }
+
+  async removeById(userId: string): Promise<User> {
+    return this.userRepository.removeById(userId);
+  }
+
+  async updateById(id: string, body: UpdateUserDto): Promise<User> {
+    if (body.password) {
+      body.password = await this.hashPassword(body.password);
+    }
+
+    return this.userRepository.updateById(id, body);
   }
 
   async hashPassword(password: string): Promise<string> {
