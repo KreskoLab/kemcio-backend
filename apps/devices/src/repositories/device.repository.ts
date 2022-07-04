@@ -16,20 +16,24 @@ export class DeviceRepository {
     return new this.deviceModel(newDevice);
   }
 
-  async findByTopic(deviceTopic: string): Promise<Device> {
-    return this.deviceModel.findOne({ topic: deviceTopic });
-  }
-
-  async findById(deviceId: string): Promise<Device> {
-    return this.deviceModel.findById(deviceId);
+  async findById(id: string): Promise<Device> {
+    return this.deviceModel.findById(id);
   }
 
   async getAll(): Promise<Device[]> {
     return this.deviceModel.find();
   }
 
+  async removeById(id: string): Promise<Device> {
+    return this.deviceModel.findByIdAndRemove(id);
+  }
+
+  async updateById(id: string, device: Partial<Device>): Promise<Device> {
+    return this.deviceModel.findByIdAndUpdate(id, device, { new: true });
+  }
+
   async updateProperty(deviceTopic: string, property: string, newValue: string | number | boolean): Promise<Device> {
-    return this.deviceModel.findOneAndUpdate({ topic: deviceTopic }, { [property]: newValue }, { new: true });
+    return this.deviceModel.findByIdAndUpdate(deviceTopic, { [property]: newValue }, { new: true });
   }
 
   async getElements(): Promise<DeviceElements[]> {
@@ -66,7 +70,7 @@ export class DeviceRepository {
     message.forEach((item) =>
       bulkDocs.push({
         updateOne: {
-          filter: { topic: deviceTopic },
+          filter: { _id: deviceTopic },
           update: [
             {
               $set: {
