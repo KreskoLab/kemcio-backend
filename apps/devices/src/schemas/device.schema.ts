@@ -1,15 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { MessageDataI } from '@app/common';
+import { MessageData } from '@app/common';
 
 export type DeviceDocument = Device & Document;
 
-@Schema({ versionKey: false })
+@Schema({ versionKey: false, timestamps: true })
 export class Device {
   _id: string;
-
-  @Prop({ required: true, unique: true })
-  topic: string;
 
   @Prop({ required: true })
   name: string;
@@ -27,13 +24,16 @@ export class Device {
   gpio: string;
 
   @Prop({ required: false })
+  pin: string;
+
+  @Prop({ required: false })
   online: boolean;
 
   @Prop({ required: false })
   interval: number;
 
   @Prop({ type: [] })
-  elements: MessageDataI[];
+  elements: MessageData[];
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);
