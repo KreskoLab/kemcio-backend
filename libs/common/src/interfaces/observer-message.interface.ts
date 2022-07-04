@@ -1,4 +1,4 @@
-export interface ObserverMessageI {
+export interface ObserverMessage {
   data: string;
-  observerId: string;
+  id: string;
 }

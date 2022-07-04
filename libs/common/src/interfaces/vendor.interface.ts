@@ -1,7 +1,13 @@
-import { VendorDeviceI } from './vendor-device.interface';
-
-export interface VendorI {
+interface VendorDevice {
   name: string;
   slug: string;
-  devices: VendorDeviceI[];
+  vendor: string;
+  type: string;
+  gpio?: string;
+}
+
+export interface Vendor {
+  name: string;
+  slug: string;
+  devices: VendorDevice[];
 }

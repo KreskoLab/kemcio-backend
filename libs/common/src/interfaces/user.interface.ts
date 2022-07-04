@@ -1,6 +1,6 @@
-export interface UserI {
-  _id?: string;
-  name?: string;
-  login?: string;
-  password?: string;
+export interface User {
+  _id: string;
+  name: string;
+  login: string;
+  password: string;
 }

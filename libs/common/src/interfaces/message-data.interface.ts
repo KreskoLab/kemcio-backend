@@ -1,5 +1,5 @@
-export interface MessageDataI {
-  value: string;
+export interface MessageData {
+  value: string | number;
   name: string;
-  unit?: string;
+  element?: string;
 }
