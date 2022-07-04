@@ -1,6 +1,9 @@
 export class CreateDeviceDto {
   name: string;
-  topic: string;
-  type: string;
+  type: 'switch' | 'bulb' | 'sensor';
   vendor: string;
+  device?: string;
+  gpio?: string;
+  pin?: string;
+  interval?: number;
 }
