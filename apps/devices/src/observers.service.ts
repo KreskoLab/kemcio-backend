@@ -1,31 +1,30 @@
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { Injectable } from '@nestjs/common';
-import { ObserverI, ObserverMessageI } from '@app/common';
+import { ObserverMessage } from '@app/common';
 
 @Injectable()
 export class ObserversService {
   constructor(private readonly amqpService: AmqpConnection) {}
 
-  private observables: ObserverI[] = [];
+  private observers: string[] = [];
 
-  public addObserver(observer: ObserverI): void {
-    this.observables.push(observer);
+  public addObserver(id: string): void {
+    this.observers.push(id);
   }
 
   public removeObserver(id: string): void {
-    this.observables = this.observables.filter((observer) => observer.id !== id);
+    this.observers = this.observers.filter((observer) => observer !== id);
   }
 
-  public observerTopicExist(topic: string): boolean {
-    return !!this.observables.find((observer) => observer.topic === topic);
+  public observersExist(): boolean {
+    return this.observers.length ? true : false;
   }
 
   public sendToObservers(topic: string, msg: string): void {
-    const observables = this.observables.filter((observer) => observer.topic === topic);
-    observables.forEach((observer) => this.sendMessage({ data: msg, id: observer.id }));
+    this.sendMessage({ data: msg, id: topic });
   }
 
-  private sendMessage(msg: ObserverMessageI): void {
+  private sendMessage(msg: ObserverMessage): void {
     const content = Buffer.from(JSON.stringify(msg));
     this.amqpService.channel.sendToQueue('devices-observers', content);
   }
