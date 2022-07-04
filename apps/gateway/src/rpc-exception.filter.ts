@@ -6,8 +6,11 @@ export class AllExceptionsFilter implements RpcExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
 
-    const err = typeof exception === 'string' ? JSON.parse(exception) : exception;
-
-    return response.status(err.code).json(err.msg);
+    if (exception.status) {
+      return response.status(exception.status).send(exception.response);
+    } else {
+      const err = typeof exception === 'string' ? JSON.parse(exception) : exception;
+      return response.status(err.code).json(err.msg);
+    }
   }
 }
