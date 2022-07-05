@@ -9,6 +9,8 @@ import {
   NewDeviceId,
   CreateDeviceDto,
   UpdateWiFiDto,
+  Period,
+  DeviceElementData,
 } from '@app/common';
 import { ackErrorHandler, RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { Controller } from '@nestjs/common';
@@ -157,15 +159,27 @@ export class DevicesController {
     allowNonJsonMessages: true,
     errorHandler: ackErrorHandler,
   })
-  async devicesElementHandler({ data }: { data: { id: string; element: string } }): Promise<string | number> {
+  async devicesElementHandler({
+    pattern,
+    data,
+  }: {
+    pattern: string;
+    data: { id: string; element: string; period?: Period };
+  }): Promise<string | number | DeviceElementData[]> {
     const device = await this.devicesService.getDevice(data.id);
 
-    if (device && device.online && device.elements.find((item) => item.name === data.element)) {
-      const res = await this.devicesService.listenElement(device._id, device.gpio, data.element);
-      await this.devicesService.execCommand('Status', '8', device._id);
+    switch (pattern) {
+      case 'device-element-data':
+        return this.devicesService.getElementData(data.id, data.element, data.period);
 
-      return firstValueFrom(res);
-    } else return 'error';
+      case 'device-element':
+        if (device && device.online && device.elements.find((item) => item.name === data.element)) {
+          const res = await this.devicesService.listenElement(device._id, device.gpio, data.element);
+          await this.devicesService.execCommand('Status', '8', device._id);
+
+          return firstValueFrom(res);
+        } else return 'error';
+    }
   }
 
   @RabbitRPC({

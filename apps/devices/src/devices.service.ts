@@ -13,6 +13,8 @@ import {
   NewDeviceId,
   CreateDeviceDto,
   WiFi,
+  Period,
+  DeviceElementData,
 } from '@app/common';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { Injectable } from '@nestjs/common';
@@ -24,6 +26,7 @@ import { DeviceRepository } from './repositories/device.repository';
 import { Device, DeviceDocument } from './schemas/device.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class DevicesService {
@@ -167,6 +170,10 @@ export class DevicesService {
     return list;
   }
 
+  async getElementData(deviceId: string, element: string, period: Period): Promise<DeviceElementData[]> {
+    return this.dataRepository.getData(deviceId, element, period);
+  }
+
   public handleOnline(msg: boolean) {
     return { online: msg };
   }
@@ -221,8 +228,10 @@ export class DevicesService {
         break;
     }
 
+    const UTC = DateTime.fromISO(msg.Time, { zone: 'Europe/London' }).toUTC().toString();
+
     await this.deviceRepository.replaceMesage(deviceTopic, lastMessage);
-    await this.dataRepository.save({ time: new Date(msg.Time), topicId: deviceTopic, data: data });
+    await this.dataRepository.save({ time: UTC, topicId: deviceTopic, data: data });
   }
 
   async execCommand(cmd: string, value: string, deviceTopic: string): Promise<void> {
