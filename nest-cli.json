@@ -7,7 +7,9 @@
   "compilerOptions": {
     "webpack": true,
     "tsConfigPath": "apps/gateway/tsconfig.app.json",
-    "assets": ["**/*.bin"]
+    "assets": [
+      "**/*.bin"
+    ]
   },
   "projects": {
     "gateway": {
@@ -44,7 +46,9 @@
       "sourceRoot": "apps/devices/src",
       "compilerOptions": {
         "tsConfigPath": "apps/devices/tsconfig.app.json",
-        "assets": ["**/*.json"]
+        "assets": [
+          "**/*.json"
+        ]
       }
     },
     "common": {
@@ -54,6 +58,15 @@
       "sourceRoot": "libs/common/src",
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
+    "workflows": {
+      "type": "application",
+      "root": "apps/workflows",
+      "entryFile": "main",
+      "sourceRoot": "apps/workflows/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/workflows/tsconfig.app.json"
       }
     }
   }
