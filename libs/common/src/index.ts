@@ -27,6 +27,9 @@ export * from './interfaces/edge.interface';
 export * from './interfaces/new-device-data.interface';
 export * from './interfaces/new-device-id.interface';
 export * from './interfaces/wifi.interface';
+export * from './interfaces/device-element-data.interface';
+
+export * from './types/period';
 
 export * from './classes/sensors-intervals';
 
