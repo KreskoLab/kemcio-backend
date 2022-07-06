@@ -145,7 +145,7 @@ export class DevicesController {
     },
     allowNonJsonMessages: true,
   })
-  async removeDevice({ data }: { data: string }): Promise<string> {
+  async removeDeviceHandler({ data }: { data: string }): Promise<string> {
     return this.devicesService.removeDevice(data);
   }
 
@@ -206,19 +206,18 @@ export class DevicesController {
     createQueueIfNotExists: true,
     allowNonJsonMessages: true,
   })
-  async pubSubHandler(msg: object, rawMessage: ConsumeMessage) {
+  async devicesOnlineHandler(msg: object, rawMessage: ConsumeMessage) {
     const deviceTopic = rawMessage.fields.routingKey.split('.')[1];
     const content = rawMessage.content.toString();
 
     const status = content === 'Online' ? true : false;
-
     const handledMsg = this.devicesService.handleOnline(status);
+
+    await this.devicesService.setDeviceStatus(deviceTopic, status);
 
     if (this.observersService.observersExist()) {
       this.observersService.sendToObservers(deviceTopic, JSON.stringify(handledMsg));
     }
-
-    await this.devicesService.setDeviceStatus(deviceTopic, status);
   }
 
   @RabbitSubscribe({
@@ -248,7 +247,7 @@ export class DevicesController {
     queue: 'devices-results',
     allowNonJsonMessages: true,
   })
-  async testim(msg: IncomingStateMsg, rawMessage: ConsumeMessage) {
+  async handleDeviceResults(msg: IncomingStateMsg, rawMessage: ConsumeMessage) {
     const deviceTopic = rawMessage.fields.routingKey.split('.')[1];
 
     let state: Partial<StateMsg> = {
