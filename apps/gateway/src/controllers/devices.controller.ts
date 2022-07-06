@@ -14,6 +14,7 @@ import {
   Res,
   Sse,
   StreamableFile,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandDto, CreateDeviceDto, DeviceElements, Period, UpdateWiFiDto, Vendor } from '@app/common';
 import { ClientProxy } from '@nestjs/microservices';
@@ -24,6 +25,7 @@ import { resolve } from 'path';
 import { firstValueFrom, Observable } from 'rxjs';
 import { SseService } from '../sse.service';
 import { v4 as uuid } from 'uuid';
+import { AuthGuard } from '../guards/auth.guard';
 
 @Controller('devices')
 export class DevicesController {
@@ -39,21 +41,25 @@ export class DevicesController {
   ) {}
 
   @Get()
+  @UseGuards(AuthGuard)
   async getDevices(): Promise<Device[]> {
     return firstValueFrom(this.devicesService.send('devices', ''));
   }
 
   @Get('vendors')
+  @UseGuards(AuthGuard)
   async getVendors(): Promise<Vendor[]> {
     return firstValueFrom(this.devicesService.send('vendors-list', ''));
   }
 
   @Get('elements')
+  @UseGuards(AuthGuard)
   async getComponents(): Promise<DeviceElements[]> {
     return firstValueFrom(this.devicesService.send('devices-elements', ''));
   }
 
   @Get('firmware')
+  @UseGuards(AuthGuard)
   async getFirmware(@Query('device') device: string, @Res({ passthrough: true }) res: Response) {
     const path = resolve(__dirname, 'firmwares', `${device}.bin`);
     const firmware = createReadStream(path);
@@ -77,11 +83,13 @@ export class DevicesController {
   }
 
   @Get(':id/wifi')
+  @UseGuards(AuthGuard)
   async getDeviceWifi(@Param('id') id: string): Promise<string> {
     return firstValueFrom(this.devicesWiFiService.send('device-wifi', id));
   }
 
   @Get(':id/data/:element')
+  @UseGuards(AuthGuard)
   async getDeviceElementData(
     @Param('id') deviceId: string,
     @Param('element') deviceElement: string,
@@ -99,6 +107,7 @@ export class DevicesController {
   }
 
   @Get(':id/:element')
+  @UseGuards(AuthGuard)
   async getDeviceElement(@Param('id') id: string, @Param('element') element: string): Promise<string> {
     const res = await firstValueFrom(this.devicesElementService.send('device-element', { id, element }));
 
@@ -107,26 +116,31 @@ export class DevicesController {
   }
 
   @Post(':id/command')
+  @UseGuards(AuthGuard)
   async deviceCommand(@Param('id') topicId: string, @Body() cmd: CommandDto): Promise<string> {
     return firstValueFrom(this.devicesCmdService.send('device-cmd', { ...cmd, topicId }));
   }
 
   @Post()
+  @UseGuards(AuthGuard)
   async createDevice(@Body() device: CreateDeviceDto): Promise<Device> {
     return firstValueFrom(this.devicesNewService.send('add-device', device));
   }
 
   @Put(':id/wifi')
+  @UseGuards(AuthGuard)
   async updateDeviceWiFi(@Param('id') id: string, @Body() wifiDto: UpdateWiFiDto): Promise<string> {
     return firstValueFrom(this.devicesUpdateService.send('update-device-wifi', { id: id, wifi: wifiDto }));
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard)
   async updateDevice(@Param('id') id: string, @Body() dto: CreateDeviceDto): Promise<Device> {
     return firstValueFrom(this.devicesUpdateService.send('update-device', { id: id, device: dto }));
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard)
   async removeDevice(@Param('id') id: string): Promise<string> {
     return firstValueFrom(this.devicesRemoveService.send('remove-device', id));
   }

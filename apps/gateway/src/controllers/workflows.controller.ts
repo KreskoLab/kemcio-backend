@@ -1,10 +1,12 @@
 import { CreateWorkflowDto, UpdateWorkflowDto } from '@app/common';
-import { Body, Controller, Get, Inject, Post, Put, Param } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Put, Param, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Workflow } from 'apps/workflows/src/schemas/workflow.schema';
 import { firstValueFrom } from 'rxjs';
+import { AuthGuard } from '../guards/auth.guard';
 
 @Controller('workflows')
+@UseGuards(AuthGuard)
 export class WorkflowsController {
   constructor(
     @Inject('new-workflows') private readonly newWorkflowsService: ClientProxy,

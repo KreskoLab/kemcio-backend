@@ -1,11 +1,13 @@
-import { Body, Controller, Delete, Get, Inject, Param, Post, Put, UseFilters } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Post, Put, UseFilters, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { User } from '@app/common/interfaces/user.interface';
 import { AllExceptionsFilter } from '../rpc-exception.filter';
 import { CreateUserDto, UpdateUserDto } from '@app/common';
+import { AuthGuard } from '../guards/auth.guard';
 
 @Controller('users')
+@UseGuards(AuthGuard)
 export class UsersController {
   constructor(@Inject('users') private readonly userService: ClientProxy) {}
 
