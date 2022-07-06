@@ -164,13 +164,13 @@ export class DevicesController {
     data,
   }: {
     pattern: string;
-    data: { id: string; element: string; period?: Period };
+    data: { id: string; element: string; period?: Period; timezone?: string };
   }): Promise<string | number | DeviceElementData[]> {
     const device = await this.devicesService.getDevice(data.id);
 
     switch (pattern) {
       case 'device-element-data':
-        return this.devicesService.getElementData(data.id, data.element, data.period);
+        return this.devicesService.getElementData(data.id, data.element, data.period, data.timezone);
 
       case 'device-element':
         if (device && device.online && device.elements.find((item) => item.name === data.element)) {
@@ -259,11 +259,13 @@ export class DevicesController {
 
     state = Object.fromEntries(Object.entries(msg).filter(([key]) => Object.keys(state).includes(key)));
 
-    await this.devicesService.saveMessage(state, deviceTopic);
+    if (Object.keys(state).length) {
+      await this.devicesService.saveMessage(state, deviceTopic);
 
-    if (this.observersService.observersExist()) {
-      const handledMsg = this.devicesService.handleSwitchElements(state);
-      this.observersService.sendToObservers(deviceTopic, JSON.stringify(handledMsg));
+      if (this.observersService.observersExist()) {
+        const handledMsg = this.devicesService.handleSwitchElements(state);
+        this.observersService.sendToObservers(deviceTopic, JSON.stringify(handledMsg));
+      }
     }
   }
 }

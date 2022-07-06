@@ -16,7 +16,7 @@ export class DataRepository {
     await this.dataModel.deleteMany({ topicId: id });
   }
 
-  async getData(deviceId: string, element: string, period: Period): Promise<DeviceElementData[]> {
+  async getData(deviceId: string, element: string, period: Period, tz: string): Promise<DeviceElementData[]> {
     const pipeline: PipelineStage[] = [
       {
         $sort: { time: -1 },
@@ -29,39 +29,6 @@ export class DataRepository {
     ];
 
     switch (period) {
-      case 'hour':
-        pipeline.push({
-          $match: {
-            $expr: {
-              $and: [
-                { topicId: deviceId },
-                {
-                  $eq: [
-                    { $dateTrunc: { date: '$currentTime', unit: period } },
-                    { $dateTrunc: { date: '$time', unit: period } },
-                  ],
-                },
-              ],
-            },
-          },
-        });
-
-        pipeline.push({
-          $group: {
-            _id: {
-              $dateTrunc: {
-                date: '$time',
-                unit: 'minute',
-              },
-            },
-            value: {
-              $avg: `$data.${element}`,
-            },
-          },
-        });
-
-        break;
-
       case 'day':
         pipeline.push({
           $match: {
@@ -70,8 +37,8 @@ export class DataRepository {
                 { topicId: deviceId },
                 {
                   $eq: [
-                    { $dateTrunc: { date: '$currentTime', unit: 'day' } },
-                    { $dateTrunc: { date: '$time', unit: 'day' } },
+                    { $dateTrunc: { date: '$currentTime', unit: 'day', timezone: tz } },
+                    { $dateTrunc: { date: '$time', unit: 'day', timezone: tz } },
                   ],
                 },
               ],
@@ -85,6 +52,7 @@ export class DataRepository {
               $dateTrunc: {
                 date: '$time',
                 unit: 'hour',
+                timezone: tz,
               },
             },
             value: {
@@ -103,8 +71,8 @@ export class DataRepository {
                 { topicId: deviceId },
                 {
                   $eq: [
-                    { $dateTrunc: { date: '$currentTime', unit: 'week' } },
-                    { $dateTrunc: { date: '$time', unit: 'week' } },
+                    { $dateTrunc: { date: '$currentTime', unit: 'week', timezone: tz } },
+                    { $dateTrunc: { date: '$time', unit: 'week', timezone: tz } },
                   ],
                 },
               ],
@@ -118,6 +86,7 @@ export class DataRepository {
               $dateTrunc: {
                 date: '$time',
                 unit: 'day',
+                timezone: tz,
               },
             },
             value: {
@@ -136,8 +105,8 @@ export class DataRepository {
                 { topicId: deviceId },
                 {
                   $eq: [
-                    { $dateTrunc: { date: '$currentTime', unit: 'month' } },
-                    { $dateTrunc: { date: '$time', unit: 'month' } },
+                    { $dateTrunc: { date: '$currentTime', unit: 'month', timezone: tz } },
+                    { $dateTrunc: { date: '$time', unit: 'month', timezone: tz } },
                   ],
                 },
               ],
@@ -151,6 +120,7 @@ export class DataRepository {
               $dateTrunc: {
                 date: '$time',
                 unit: 'day',
+                timezone: tz,
               },
             },
             value: {

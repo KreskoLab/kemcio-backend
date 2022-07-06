@@ -15,7 +15,7 @@ import {
   Sse,
   StreamableFile,
 } from '@nestjs/common';
-import { CommandDto, CreateDeviceDto, DeviceElements, UpdateWiFiDto, Vendor } from '@app/common';
+import { CommandDto, CreateDeviceDto, DeviceElements, Period, UpdateWiFiDto, Vendor } from '@app/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Device } from 'apps/devices/src/schemas/device.schema';
 import { Response } from 'express';
@@ -85,10 +85,16 @@ export class DevicesController {
   async getDeviceElementData(
     @Param('id') deviceId: string,
     @Param('element') deviceElement: string,
-    @Query('period') period: string,
+    @Query('period') period: Period = 'day',
+    @Query('tz') tz?: string,
   ): Promise<any> {
     return firstValueFrom(
-      this.devicesElementService.send('device-element-data', { id: deviceId, element: deviceElement, period: period }),
+      this.devicesElementService.send('device-element-data', {
+        id: deviceId,
+        element: deviceElement,
+        period: period,
+        timezone: tz,
+      }),
     );
   }
 

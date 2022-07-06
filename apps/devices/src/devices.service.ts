@@ -40,8 +40,8 @@ export class DevicesService {
   private sensorsIntervals: SensorInterval[] = [];
   private pendingNewDevices = new Map<string, DeviceDocument>();
 
-  onModuleInit() {
-    this.setSensorsIntervals();
+  async onModuleInit() {
+    await this.setSensorsIntervals();
   }
 
   async vendorsList(): Promise<Vendor[]> {
@@ -170,8 +170,14 @@ export class DevicesService {
     return list;
   }
 
-  async getElementData(deviceId: string, element: string, period: Period): Promise<DeviceElementData[]> {
-    return this.dataRepository.getData(deviceId, element, period);
+  async getElementData(
+    deviceId: string,
+    element: string,
+    period: Period,
+    timezone: string,
+  ): Promise<DeviceElementData[]> {
+    const tz = timezone ? timezone : DateTime.local().zoneName;
+    return this.dataRepository.getData(deviceId, element, period, tz);
   }
 
   public handleOnline(msg: boolean) {
