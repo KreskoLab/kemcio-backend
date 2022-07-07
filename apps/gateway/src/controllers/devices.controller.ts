@@ -107,7 +107,6 @@ export class DevicesController {
   }
 
   @Get(':id/:element')
-  @UseGuards(AuthGuard)
   async getDeviceElement(@Param('id') id: string, @Param('element') element: string): Promise<string> {
     const res = await firstValueFrom(this.devicesElementService.send('device-element', { id, element }));
 
@@ -116,7 +115,6 @@ export class DevicesController {
   }
 
   @Post(':id/command')
-  @UseGuards(AuthGuard)
   async deviceCommand(@Param('id') topicId: string, @Body() cmd: CommandDto): Promise<string> {
     return firstValueFrom(this.devicesCmdService.send('device-cmd', { ...cmd, topicId }));
   }
