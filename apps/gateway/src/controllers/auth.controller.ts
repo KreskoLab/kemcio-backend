@@ -47,6 +47,19 @@ export class AuthController {
     return tokens.accessToken;
   }
 
+  @Post('logout')
+  @UseFilters(new AllExceptionsFilter())
+  async logout(@Res({ passthrough: true }) response: Response): Promise<string> {
+    response.cookie('refreshToken', '', {
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge: 1,
+      domain: this.configService.get<string>('FRONTEND_DOMAIN'),
+    });
+
+    return 'bye';
+  }
+
   @Post('me')
   @UseFilters(new AllExceptionsFilter())
   async getUserData(@Headers() headers: object): Promise<User> {
