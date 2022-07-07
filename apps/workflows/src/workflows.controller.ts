@@ -10,7 +10,7 @@ export class WorkflowsController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'new-workflows',
+    queue: 'workflows-new',
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -22,14 +22,26 @@ export class WorkflowsController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'update-workflows',
+    queue: 'workflows-update',
     queueOptions: {
       autoDelete: true,
       durable: false,
     },
   })
-  async updateWorkflow({ pattern, data }: { pattern: string; data: UpdateWorkflowDto }): Promise<Workflow> {
-    return this.workflowsService.updateWorkflow(pattern, data);
+  async updateWorkflow({
+    pattern,
+    data,
+  }: {
+    pattern: 'update' | 'remove';
+    data: { body?: UpdateWorkflowDto; id: string };
+  }): Promise<Workflow> {
+    switch (pattern) {
+      case 'update':
+        return this.workflowsService.updateWorkflow(data.id, data.body);
+
+      case 'remove':
+        return this.workflowsService.removeWorkflow(data.id);
+    }
   }
 
   @RabbitRPC({
@@ -42,10 +54,10 @@ export class WorkflowsController {
   })
   async workflowsHanlder({ pattern, data }: { pattern: string; data: string }): Promise<Workflow | Workflow[]> {
     switch (pattern) {
-      case 'get-workflows':
-        return this.workflowsService.getWorkflows('_id name createdAt rawEdges rawNodes');
+      case 'workflows':
+        return this.workflowsService.getWorkflows('_id pause name createdAt rawEdges rawNodes');
 
-      case 'get-workflow':
+      case 'workflow':
         return this.workflowsService.getWorkflow(data);
     }
   }

@@ -22,4 +22,8 @@ export class WorkflowsRepository {
   async updateById(id: string, fields: Partial<Workflow>): Promise<Workflow> {
     return this.workflowModel.findByIdAndUpdate(id, { $set: fields }, { new: true });
   }
+
+  async removeById(id: string): Promise<Workflow> {
+    return this.workflowModel.findByIdAndRemove(id);
+  }
 }

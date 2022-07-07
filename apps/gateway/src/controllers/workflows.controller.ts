@@ -1,5 +1,5 @@
 import { CreateWorkflowDto, UpdateWorkflowDto } from '@app/common';
-import { Body, Controller, Get, Inject, Post, Put, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Put, Param, UseGuards, Delete } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Workflow } from 'apps/workflows/src/schemas/workflow.schema';
 import { firstValueFrom } from 'rxjs';
@@ -9,28 +9,33 @@ import { AuthGuard } from '../guards/auth.guard';
 @UseGuards(AuthGuard)
 export class WorkflowsController {
   constructor(
-    @Inject('new-workflows') private readonly newWorkflowsService: ClientProxy,
-    @Inject('update-workflows') private readonly updateWorkflowsService: ClientProxy,
+    @Inject('workflows-new') private readonly newWorkflowsService: ClientProxy,
+    @Inject('workflows-update') private readonly updateWorkflowsService: ClientProxy,
     @Inject('workflows') private readonly workflowsService: ClientProxy,
   ) {}
 
   @Get()
   async getWorkflows(): Promise<Workflow[]> {
-    return firstValueFrom(this.workflowsService.send('get-workflows', ''));
-  }
-
-  @Get(':id')
-  async getWorkflow(@Param('id') id: string): Promise<Workflow> {
-    return firstValueFrom(this.workflowsService.send('get-workflow', id));
+    return firstValueFrom(this.workflowsService.send('workflows', ''));
   }
 
   @Post()
   async createWorkflow(@Body() workflow: CreateWorkflowDto): Promise<Workflow> {
-    return firstValueFrom(this.newWorkflowsService.send('new-workflow', workflow));
+    return firstValueFrom(this.newWorkflowsService.send('workflow-new', workflow));
+  }
+
+  @Get(':id')
+  async getWorkflow(@Param('id') id: string): Promise<Workflow> {
+    return firstValueFrom(this.workflowsService.send('workflow', id));
   }
 
   @Put(':id')
-  async updateWorkflow(@Param('id') id: string, @Body() workflow: UpdateWorkflowDto): Promise<Workflow> {
-    return firstValueFrom(this.updateWorkflowsService.send(id, workflow));
+  async updateWorkflow(@Param('id') workflowId: string, @Body() workflow: UpdateWorkflowDto): Promise<Workflow> {
+    return firstValueFrom(this.updateWorkflowsService.send('update', { body: workflow, id: workflowId }));
+  }
+
+  @Delete(':id')
+  async removeWorkflow(@Param('id') workflowId: string): Promise<Workflow> {
+    return firstValueFrom(this.updateWorkflowsService.send('remove', { id: workflowId }));
   }
 }

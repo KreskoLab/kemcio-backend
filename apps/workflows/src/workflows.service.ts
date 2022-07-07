@@ -63,6 +63,16 @@ export class WorkflowsService {
     return workflow;
   }
 
+  async removeWorkflow(id: string): Promise<Workflow> {
+    const workflow = await this.workflowsRepository.removeById(id);
+
+    if (await this.cronJobExist(workflow.name)) {
+      this.deleteCronJob(workflow.name);
+    }
+
+    return workflow;
+  }
+
   async cronJobExist(name: string): Promise<boolean> {
     try {
       this.schedulerRegistry.getCronJob(name);
