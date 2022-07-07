@@ -9,11 +9,16 @@ export class NodeDataResolver {
 
   public async exec(params: ValueMap): Promise<ValueMap> {
     const url = this.configService.get<string>('GATEWAY_URL');
-    const res = await firstValueFrom(
-      this.httpService.get<string>(`${url}/devices/${params.deviceId}/${params.deviceElement}`),
-    );
 
-    return { data: res.data.split(/(\s+)/)[0] };
+    try {
+      const res = await firstValueFrom(
+        this.httpService.get<string>(`${url}/devices/${params.deviceId}/${params.deviceElement}`),
+      );
+
+      return { data: res.data.split(/(\s+)/)[0] };
+    } catch (error) {
+      return { data: 'error' };
+    }
   }
 }
 
@@ -50,13 +55,17 @@ export class NodeCommandResolver {
   public async exec(params: ValueMap): Promise<object> {
     const url = this.configService.get<string>('GATEWAY_URL');
 
-    await firstValueFrom(
-      this.httpService.post(`${url}/devices/${params.deviceId}/command`, {
-        name: params.deviceElement,
-        value: params.deviceValue,
-      }),
-    );
+    try {
+      await firstValueFrom(
+        this.httpService.post(`${url}/devices/${params.deviceId}/command`, {
+          name: params.deviceElement,
+          value: params.deviceValue,
+        }),
+      );
 
-    return { results: 'ok' };
+      return { results: 'ok' };
+    } catch (error) {
+      return { error: 'error' };
+    }
   }
 }
