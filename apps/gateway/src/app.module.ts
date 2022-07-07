@@ -27,8 +27,8 @@ import { SseService } from './sse.service';
     RmqModule.register({ name: 'devices-update' }),
     RmqModule.register({ name: 'devices-remove' }),
     RmqModule.register({ name: 'workflows' }),
-    RmqModule.register({ name: 'new-workflows' }),
-    RmqModule.register({ name: 'update-workflows' }),
+    RmqModule.register({ name: 'workflows-new' }),
+    RmqModule.register({ name: 'workflows-update' }),
     RabbitMQModule.forRootAsync(RabbitMQModule, {
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
