@@ -18,15 +18,15 @@ export class UsersRepository {
   }
 
   async findById(id: string): Promise<User> {
-    return this.userModel.findById(id, 'login name _id');
+    return this.userModel.findById(id, 'login name role _id');
   }
 
   async findByLogin(login: string): Promise<User> {
-    return this.userModel.findOne({ login: login }, 'password login name tokens _id');
+    return this.userModel.findOne({ login: login }, 'password login name tokens role _id');
   }
 
   async findAll(): Promise<User[]> {
-    return this.userModel.find({}, 'login name _id');
+    return this.userModel.find({}, 'login name role _id');
   }
 
   async updateById(id: string, body: UpdateUserDto): Promise<User> {
