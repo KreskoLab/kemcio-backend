@@ -37,5 +37,6 @@ export * from './enums/names';
 export * from './enums/units';
 export * from './enums/nodes';
 export * from './enums/elements';
+export * from './enums/roles';
 
 export * from './rmq/rmq.module';
