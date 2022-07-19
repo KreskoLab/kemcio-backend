@@ -1,3 +1,4 @@
+import { ROLES } from '@app/common';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
@@ -18,8 +19,11 @@ export class User {
   })
   login: string;
 
-  @Prop({ required: true, select: false, minlength: 6, maxlength: 64 })
+  @Prop({ required: true, select: false })
   password: string;
+
+  @Prop({ type: String, enum: ROLES, default: ROLES.GUEST })
+  role: ROLES;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
