@@ -26,6 +26,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { SseService } from '../sse.service';
 import { v4 as uuid } from 'uuid';
 import { AuthGuard } from '../guards/auth.guard';
+import { AdminGuard } from '../guards/admin.guard';
 
 @Controller('devices')
 export class DevicesController {
@@ -120,25 +121,25 @@ export class DevicesController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AdminGuard)
   async createDevice(@Body() device: CreateDeviceDto): Promise<Device> {
     return firstValueFrom(this.devicesNewService.send('add-device', device));
   }
 
   @Put(':id/wifi')
-  @UseGuards(AuthGuard)
+  @UseGuards(AdminGuard)
   async updateDeviceWiFi(@Param('id') id: string, @Body() wifiDto: UpdateWiFiDto): Promise<string> {
     return firstValueFrom(this.devicesUpdateService.send('update-device-wifi', { id: id, wifi: wifiDto }));
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AdminGuard)
   async updateDevice(@Param('id') id: string, @Body() dto: CreateDeviceDto): Promise<Device> {
     return firstValueFrom(this.devicesUpdateService.send('update-device', { id: id, device: dto }));
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AdminGuard)
   async removeDevice(@Param('id') id: string): Promise<string> {
     return firstValueFrom(this.devicesRemoveService.send('remove-device', id));
   }
