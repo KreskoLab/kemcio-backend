@@ -3,12 +3,13 @@ import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { Tokens } from '@app/common/interfaces/tokens.interfaces';
 import { Token } from './schemas/token.schema';
+import { AUTH_CMD } from '@app/common';
 
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @MessagePattern({ cmd: 'auth-tokens' })
+  @MessagePattern({ cmd: AUTH_CMD.TOKENS })
   async generateTokens(@Payload() data: { _id: string }): Promise<Tokens> {
     const { accessToken, refreshToken } = await this.authService.generateTokens({ _id: data._id });
 
@@ -22,7 +23,7 @@ export class AuthController {
     return { accessToken, refreshToken };
   }
 
-  @MessagePattern({ cmd: 'auth-verify-accessToken' })
+  @MessagePattern({ cmd: AUTH_CMD.VERIFY_ACCESS_TOKEN })
   async verifyAccessToken(@Payload() data: Pick<Tokens, 'accessToken'>): Promise<string> {
     const valid = await this.authService.verifyAccessToken(data.accessToken);
 
@@ -32,7 +33,7 @@ export class AuthController {
     } else throw new RpcException({ code: 403, msg: 'Unauthorized' });
   }
 
-  @MessagePattern({ cmd: 'auth-verify-refreshToken' })
+  @MessagePattern({ cmd: AUTH_CMD.VERIFY_REFRESH_TOKEN })
   async verifyTokens(@Payload() data: Tokens): Promise<Pick<Tokens, 'accessToken'>> {
     const validRefreshToken = await this.authService.verifyRefreshToken(data.refreshToken);
 

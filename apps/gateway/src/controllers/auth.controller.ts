@@ -18,23 +18,24 @@ import { Tokens } from '@app/common/interfaces/tokens.interfaces';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { AllExceptionsFilter } from '../rpc-exception.filter';
+import { AUTH_CMD, AUTH_ROUTES, USERS_CMD, USERS_ROUTES } from '@app/common';
 
 type UserPayload = Pick<User, '_id'>;
 
 @Controller('auth')
 export class AuthController {
   constructor(
-    @Inject('users') private readonly userService: ClientProxy,
-    @Inject('auth') private readonly authService: ClientProxy,
+    @Inject(USERS_ROUTES.MAIN) private readonly userService: ClientProxy,
+    @Inject(AUTH_ROUTES.MAIN) private readonly authService: ClientProxy,
     private readonly configService: ConfigService,
   ) {}
 
   @Post('login')
   @UseFilters(new AllExceptionsFilter())
   async login(@Body() loginDto: LoginUserDto, @Res({ passthrough: true }) response: Response): Promise<string> {
-    const user = await firstValueFrom<User>(this.userService.send({ cmd: 'user-login' }, loginDto));
+    const user = await firstValueFrom<User>(this.userService.send({ cmd: USERS_CMD.LOGIN }, loginDto));
     const tokens = await firstValueFrom(
-      this.authService.send<Tokens, UserPayload>({ cmd: 'auth-tokens' }, { _id: user._id }),
+      this.authService.send<Tokens, UserPayload>({ cmd: AUTH_CMD.TOKENS }, { _id: user._id }),
     );
 
     response.cookie('refreshToken', tokens.refreshToken, {
@@ -68,12 +69,12 @@ export class AuthController {
 
       const userId = await firstValueFrom(
         this.authService.send<string, Pick<Tokens, 'accessToken'>>(
-          { cmd: 'auth-verify-accessToken' },
+          { cmd: AUTH_CMD.VERIFY_ACCESS_TOKEN },
           { accessToken: accessToken },
         ),
       );
 
-      const user = await firstValueFrom(this.userService.send<User, string>({ cmd: 'user-data' }, userId));
+      const user = await firstValueFrom(this.userService.send<User, string>({ cmd: USERS_CMD.USER }, userId));
 
       if (user) return user;
       else throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -88,7 +89,7 @@ export class AuthController {
 
       const res = await firstValueFrom(
         this.authService.send<Pick<Tokens, 'accessToken'>, Pick<Tokens, 'refreshToken'>>(
-          { cmd: 'auth-verify-refreshToken' },
+          { cmd: AUTH_CMD.VERIFY_REFRESH_TOKEN },
           { refreshToken: refreshToken },
         ),
       );

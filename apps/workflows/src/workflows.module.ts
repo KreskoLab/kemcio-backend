@@ -16,7 +16,6 @@ import { ScheduleModule } from '@nestjs/schedule';
       isGlobal: true,
       envFilePath: './apps/workflows/.env',
     }),
-
     HttpModule,
     MongodbModule,
     ScheduleModule.forRoot(),

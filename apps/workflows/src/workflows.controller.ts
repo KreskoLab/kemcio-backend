@@ -1,4 +1,4 @@
-import { UpdateWorkflowDto } from '@app/common';
+import { UpdateWorkflowDto, WORKFLOWS_ROUTES } from '@app/common';
 import { RabbitRPC } from '@golevelup/nestjs-rabbitmq';
 import { Controller } from '@nestjs/common';
 import { Workflow } from './schemas/workflow.schema';
@@ -10,7 +10,7 @@ export class WorkflowsController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'workflows-new',
+    queue: WORKFLOWS_ROUTES.NEW,
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -22,7 +22,7 @@ export class WorkflowsController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'workflows-update',
+    queue: WORKFLOWS_ROUTES.UPDATE,
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -46,7 +46,7 @@ export class WorkflowsController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'workflows',
+    queue: WORKFLOWS_ROUTES.DATA,
     queueOptions: {
       autoDelete: true,
       durable: false,

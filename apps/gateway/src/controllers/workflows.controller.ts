@@ -1,4 +1,4 @@
-import { CreateWorkflowDto, UpdateWorkflowDto } from '@app/common';
+import { CreateWorkflowDto, UpdateWorkflowDto, WORKFLOWS_ROUTES } from '@app/common';
 import { Body, Controller, Get, Inject, Post, Put, Param, UseGuards, Delete } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Workflow } from 'apps/workflows/src/schemas/workflow.schema';
@@ -9,9 +9,9 @@ import { AuthGuard } from '../guards/auth.guard';
 @UseGuards(AuthGuard)
 export class WorkflowsController {
   constructor(
-    @Inject('workflows-new') private readonly newWorkflowsService: ClientProxy,
-    @Inject('workflows-update') private readonly updateWorkflowsService: ClientProxy,
-    @Inject('workflows') private readonly workflowsService: ClientProxy,
+    @Inject(WORKFLOWS_ROUTES.NEW) private readonly newWorkflowsService: ClientProxy,
+    @Inject(WORKFLOWS_ROUTES.UPDATE) private readonly updateWorkflowsService: ClientProxy,
+    @Inject(WORKFLOWS_ROUTES.DATA) private readonly workflowsService: ClientProxy,
   ) {}
 
   @Get()

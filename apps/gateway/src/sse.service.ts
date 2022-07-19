@@ -1,4 +1,4 @@
-import { ObserverMessage } from '@app/common';
+import { DEVICES_ROUTES, ObserverMessage } from '@app/common';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { Inject, Injectable, MessageEvent } from '@nestjs/common';
 import { ExternalContextCreator } from '@nestjs/core/helpers/external-context-creator';
@@ -10,7 +10,7 @@ export class SseService {
   constructor(
     private readonly amqpService: AmqpConnection,
     private readonly externalContextCreator: ExternalContextCreator,
-    @Inject('devices-add-remove-observer') private readonly observersService: ClientProxy,
+    @Inject(DEVICES_ROUTES.OBSERVER) private readonly observersService: ClientProxy,
   ) {}
 
   onModuleInit() {

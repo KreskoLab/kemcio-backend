@@ -11,6 +11,7 @@ import {
   UpdateWiFiDto,
   Period,
   DeviceElementData,
+  DEVICES_ROUTES,
 } from '@app/common';
 import { ackErrorHandler, RabbitRPC, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { Controller } from '@nestjs/common';
@@ -26,7 +27,7 @@ export class DevicesController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices',
+    queue: DEVICES_ROUTES.DEVICES,
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -47,7 +48,7 @@ export class DevicesController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices-new',
+    queue: DEVICES_ROUTES.NEW,
     allowNonJsonMessages: true,
     queueOptions: {
       autoDelete: true,
@@ -75,7 +76,7 @@ export class DevicesController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices-update',
+    queue: DEVICES_ROUTES.UPDATE,
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -102,7 +103,7 @@ export class DevicesController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices-cmd',
+    queue: DEVICES_ROUTES.CMD,
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -117,7 +118,7 @@ export class DevicesController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices-add-remove-observer',
+    queue: DEVICES_ROUTES.OBSERVER,
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -138,7 +139,7 @@ export class DevicesController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices-remove',
+    queue: DEVICES_ROUTES.REMOVE,
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -151,7 +152,7 @@ export class DevicesController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices-element',
+    queue: DEVICES_ROUTES.ELEMENTS,
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -184,7 +185,7 @@ export class DevicesController {
 
   @RabbitRPC({
     exchange: 'amq.topic',
-    queue: 'devices-wifi',
+    queue: DEVICES_ROUTES.WIFI,
     queueOptions: {
       autoDelete: true,
       durable: false,
@@ -202,7 +203,7 @@ export class DevicesController {
   @RabbitSubscribe({
     exchange: 'amq.topic',
     routingKey: 'tele.#.LWT',
-    queue: 'devices-online',
+    queue: DEVICES_ROUTES.ONLINE,
     createQueueIfNotExists: true,
     allowNonJsonMessages: true,
   })
@@ -223,7 +224,7 @@ export class DevicesController {
   @RabbitSubscribe({
     exchange: 'amq.topic',
     routingKey: 'tele.#.SENSOR',
-    queue: 'devices-sensors',
+    queue: DEVICES_ROUTES.SENSORS,
     allowNonJsonMessages: true,
   })
   async sensorsHandler(msg: SensorMessage, rawMessage: ConsumeMessage) {
@@ -244,7 +245,7 @@ export class DevicesController {
   @RabbitSubscribe({
     exchange: 'amq.topic',
     routingKey: 'tele.#.STATE',
-    queue: 'devices-results',
+    queue: DEVICES_ROUTES.RESULTS,
     allowNonJsonMessages: true,
   })
   async handleDeviceResults(msg: IncomingStateMsg, rawMessage: ConsumeMessage) {

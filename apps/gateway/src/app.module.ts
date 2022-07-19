@@ -1,4 +1,4 @@
-import { RmqModule } from '@app/common';
+import { AUTH_ROUTES, DEVICES_ROUTES, RmqModule, USERS_ROUTES, WORKFLOWS_ROUTES } from '@app/common';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -16,19 +16,19 @@ import { SseService } from './sse.service';
       isGlobal: true,
       envFilePath: './apps/gateway/.env',
     }),
-    RmqModule.register({ name: 'users' }),
-    RmqModule.register({ name: 'auth' }),
-    RmqModule.register({ name: 'devices' }),
-    RmqModule.register({ name: 'devices-new' }),
-    RmqModule.register({ name: 'devices-cmd' }),
-    RmqModule.register({ name: 'devices-add-remove-observer' }),
-    RmqModule.register({ name: 'devices-element' }),
-    RmqModule.register({ name: 'devices-wifi' }),
-    RmqModule.register({ name: 'devices-update' }),
-    RmqModule.register({ name: 'devices-remove' }),
-    RmqModule.register({ name: 'workflows' }),
-    RmqModule.register({ name: 'workflows-new' }),
-    RmqModule.register({ name: 'workflows-update' }),
+    RmqModule.register({ name: USERS_ROUTES.MAIN }),
+    RmqModule.register({ name: AUTH_ROUTES.MAIN }),
+    RmqModule.register({ name: DEVICES_ROUTES.DEVICES }),
+    RmqModule.register({ name: DEVICES_ROUTES.NEW }),
+    RmqModule.register({ name: DEVICES_ROUTES.CMD }),
+    RmqModule.register({ name: DEVICES_ROUTES.OBSERVER }),
+    RmqModule.register({ name: DEVICES_ROUTES.ELEMENTS }),
+    RmqModule.register({ name: DEVICES_ROUTES.WIFI }),
+    RmqModule.register({ name: DEVICES_ROUTES.UPDATE }),
+    RmqModule.register({ name: DEVICES_ROUTES.REMOVE }),
+    RmqModule.register({ name: WORKFLOWS_ROUTES.DATA }),
+    RmqModule.register({ name: WORKFLOWS_ROUTES.NEW }),
+    RmqModule.register({ name: WORKFLOWS_ROUTES.UPDATE }),
     RabbitMQModule.forRootAsync(RabbitMQModule, {
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

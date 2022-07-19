@@ -16,7 +16,15 @@ import {
   StreamableFile,
   UseGuards,
 } from '@nestjs/common';
-import { CommandDto, CreateDeviceDto, DeviceElements, Period, UpdateWiFiDto, Vendor } from '@app/common';
+import {
+  CommandDto,
+  CreateDeviceDto,
+  DeviceElements,
+  DEVICES_ROUTES,
+  Period,
+  UpdateWiFiDto,
+  Vendor,
+} from '@app/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Device } from 'apps/devices/src/schemas/device.schema';
 import { Response } from 'express';
@@ -31,13 +39,13 @@ import { AdminGuard } from '../guards/admin.guard';
 @Controller('devices')
 export class DevicesController {
   constructor(
-    @Inject('devices') private readonly devicesService: ClientProxy,
-    @Inject('devices-new') private readonly devicesNewService: ClientProxy,
-    @Inject('devices-cmd') private readonly devicesCmdService: ClientProxy,
-    @Inject('devices-element') private readonly devicesElementService: ClientProxy,
-    @Inject('devices-wifi') private readonly devicesWiFiService: ClientProxy,
-    @Inject('devices-update') private readonly devicesUpdateService: ClientProxy,
-    @Inject('devices-remove') private readonly devicesRemoveService: ClientProxy,
+    @Inject(DEVICES_ROUTES.DEVICES) private readonly devicesService: ClientProxy,
+    @Inject(DEVICES_ROUTES.NEW) private readonly devicesNewService: ClientProxy,
+    @Inject(DEVICES_ROUTES.CMD) private readonly devicesCmdService: ClientProxy,
+    @Inject(DEVICES_ROUTES.ELEMENTS) private readonly devicesElementService: ClientProxy,
+    @Inject(DEVICES_ROUTES.WIFI) private readonly devicesWiFiService: ClientProxy,
+    @Inject(DEVICES_ROUTES.UPDATE) private readonly devicesUpdateService: ClientProxy,
+    @Inject(DEVICES_ROUTES.REMOVE) private readonly devicesRemoveService: ClientProxy,
     private readonly sseService: SseService,
   ) {}
 
