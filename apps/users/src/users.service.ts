@@ -14,15 +14,13 @@ export class UsersService {
     const user = await this.userRepository.findByLogin(loginUserDto.login);
 
     if (!user) {
-      throw new RpcException({ code: 404, msg: 'User not found' });
+      throw new RpcException({ code: 404, msg: 'Користувач не знайден' });
     } else {
       const passwordMatch = await this.comparePassword(loginUserDto.password, user.password);
 
       if (passwordMatch) {
         return user;
-      } else {
-        throw new RpcException({ code: 401, msg: 'Inccorect login or password' });
-      }
+      } else throw new RpcException({ code: 401, msg: 'Неправильний пароль або логін' });
     }
   }
 
