@@ -38,5 +38,11 @@ export * from './enums/units';
 export * from './enums/nodes';
 export * from './enums/elements';
 export * from './enums/roles';
+export * from './enums/routes/devices';
+export * from './enums/routes/workflows';
+export * from './enums/routes/users';
+export * from './enums/routes/auth';
+export * from './enums/cmds/user';
+export * from './enums/cmds/auth';
 
 export * from './rmq/rmq.module';
