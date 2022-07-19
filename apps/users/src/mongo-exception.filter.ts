@@ -7,7 +7,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
   catch(exception: MongoError) {
     switch (exception.code) {
       case 11000:
-        const err = JSON.stringify({ code: 409, msg: 'User already exists' });
+        const err = JSON.stringify({ code: 409, msg: 'Користувач вже існує' });
         return throwError(() => err);
     }
   }
