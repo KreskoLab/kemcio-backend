@@ -9,7 +9,7 @@ import { MockJwtService } from './__mocks__/jwt.service.mock';
 import { MockAuthRepository } from './__mocks__/auth.repository.mock';
 import { refreshTokenStub } from './stubs/refresh-token.stub';
 import { Tokens } from '@app/common';
-import { tokenIdStub } from './stubs/token-id';
+import { tokenStub } from './stubs/token.stub';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -148,15 +148,25 @@ describe('AuthService', () => {
     let token;
 
     beforeEach(async () => {
-      token = await authService.findToken(tokenIdStub());
+      token = await authService.findToken(tokenStub().tokenId);
     });
 
     it('should call the authRepository', () => {
-      expect(authRepository.findByTokenId).toBeCalledWith(tokenIdStub());
+      expect(authRepository.findByTokenId).toBeCalledWith(tokenStub().tokenId);
     });
 
     it('should return a finded token', () => {
-      expect(token).toEqual(tokenIdStub());
+      expect(token).toEqual(tokenStub());
+    });
+  });
+
+  describe('saveToken', () => {
+    beforeEach(async () => {
+      await authService.saveToken(tokenStub());
+    });
+
+    it('should call the authRepository', () => {
+      expect(authRepository.updateOrCreate).toBeCalledWith(tokenStub());
     });
   });
 });
