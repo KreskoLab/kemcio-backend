@@ -17,6 +17,8 @@ async function bootstrap() {
   app.useWebSocketAdapter(new WsAdapter(app));
   app.use(cookieParser());
 
+  console.log(configService.get<string>('FRONTEND_URLS'));
+
   app.enableCors({
     origin: JSON.parse(configService.get<string>('FRONTEND_URLS')),
     credentials: true,
