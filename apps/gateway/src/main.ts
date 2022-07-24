@@ -11,7 +11,7 @@ async function bootstrap() {
   const appContext = await NestFactory.createApplicationContext(AppModule);
   const configService = appContext.get(ConfigService);
 
-  app.use(helmet());
+  // app.use(helmet());
 
   app.useGlobalPipes(new ValidationPipe());
   app.useWebSocketAdapter(new WsAdapter(app));
