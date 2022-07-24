@@ -20,7 +20,7 @@ async function bootstrap() {
   console.log(configService.get<string>('FRONTEND_URLS'));
 
   app.enableCors({
-    origin: JSON.parse(configService.get<string>('FRONTEND_URLS')),
+    origin: 'https://kemcio.andrii.site',
     credentials: true,
     optionsSuccessStatus: 204,
   });
