@@ -1,9 +1,11 @@
+import { GPIO } from '../enums/gpio';
+
 interface VendorDevice {
   name: string;
   slug: string;
   vendor: string;
   type: string;
-  gpio?: string;
+  gpio?: GPIO;
 }
 
 export interface Vendor {

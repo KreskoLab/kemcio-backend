@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { MessageData } from '@app/common';
+import { GPIO, MessageData } from '@app/common';
 
 export type DeviceDocument = Device & Document;
 
@@ -20,8 +20,8 @@ export class Device {
   @Prop({ required: true })
   device: string;
 
-  @Prop({ required: false })
-  gpio: string;
+  @Prop({ required: false, type: String, enum: GPIO })
+  gpio: GPIO;
 
   @Prop({ required: false })
   pin: string;

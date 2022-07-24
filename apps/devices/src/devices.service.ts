@@ -15,6 +15,7 @@ import {
   WiFi,
   Period,
   DeviceElementData,
+  GPIO,
 } from '@app/common';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { Injectable } from '@nestjs/common';
@@ -51,7 +52,7 @@ export class DevicesService {
     return vendors.filter((vendor) => vendor.devices.length);
   }
 
-  public async getVendorDeviceGpio(name: string): Promise<string> {
+  public async getVendorDeviceGpio(name: string): Promise<GPIO> {
     const devices = await this.vendorsList().then((res) => res.map((vendor) => vendor.devices).flat());
     return devices.find((device) => device.name == name).gpio;
   }
@@ -191,11 +192,11 @@ export class DevicesService {
     return messages;
   }
 
-  public handleSensorElements(msg: SensorMessage, gpio: string) {
+  public handleSensorElements(msg: SensorMessage, gpio: GPIO) {
     let message: MessageData[] = [];
 
     switch (gpio) {
-      case '1184':
+      case GPIO.DHT:
         message = [
           {
             name: NAMES.TEMPERATURE,
@@ -218,17 +219,17 @@ export class DevicesService {
     await this.deviceRepository.replaceMesage(deviceTopic, messages);
   }
 
-  public async saveDataMessage(msg: SensorMessage, deviceTopic: string, gpio: string): Promise<void> {
+  public async saveDataMessage(msg: SensorMessage, deviceTopic: string, gpio: GPIO): Promise<void> {
     let data: Partial<DataI>;
     let lastMessage: MessageData[] = [];
 
     switch (gpio) {
-      case '1184':
+      case GPIO.DHT:
         data = { temperature: msg.DHT11.Temperature, humidity: msg.DHT11.Temperature };
 
         lastMessage = [
-          { name: 'TEMPERATURE', value: msg.DHT11.Temperature },
-          { name: 'HUMIDITY', value: msg.DHT11.Humidity },
+          { name: NAMES[NAMES.TEMPERATURE], value: msg.DHT11.Temperature },
+          { name: NAMES[NAMES.HUMIDITY], value: msg.DHT11.Humidity },
         ];
 
         break;
@@ -244,7 +245,7 @@ export class DevicesService {
     this.amqpService.publish('amq.topic', `cmnd.${deviceTopic}.${cmd}`, Buffer.from(value));
   }
 
-  public async listenElement(topicId: string, gpio: string, element: string): Promise<Observable<string | number>> {
+  public async listenElement(topicId: string, gpio: GPIO, element: string): Promise<Observable<string | number>> {
     interface ElementMsg {
       StatusSNS: SensorMessage;
     }
@@ -296,7 +297,7 @@ export class DevicesService {
     return this.sensorsIntervals.find((interval) => interval.id === id);
   }
 
-  public resetSensorInterval(id: string, interval: number, gpio: string): void {
+  public resetSensorInterval(id: string, interval: number, gpio: GPIO): void {
     this.sensorsIntervals = this.sensorsIntervals.filter((item) => item.id !== id);
     this.sensorsIntervals.push(new SensorInterval(interval, String(id), gpio));
   }
