@@ -44,19 +44,19 @@ export class DevicesService {
     await this.setSensorsIntervals();
   }
 
-  async vendorsList(): Promise<Vendor[]> {
+  public async vendorsList(): Promise<Vendor[]> {
     const path = resolve(__dirname, 'data', 'vendors.json');
     const vendors: Vendor[] = await fs.readFile(path, 'utf-8').then((res) => JSON.parse(res));
 
     return vendors.filter((vendor) => vendor.devices.length);
   }
 
-  async getVendorDeviceGpio(name: string): Promise<string> {
+  public async getVendorDeviceGpio(name: string): Promise<string> {
     const devices = await this.vendorsList().then((res) => res.map((vendor) => vendor.devices).flat());
     return devices.find((device) => device.name == name).gpio;
   }
 
-  async addDevice(data: NewDeviceData): Promise<NewDeviceId> {
+  public async addDevice(data: NewDeviceData): Promise<NewDeviceId> {
     if (!this.pendingNewDevices.has(data.clientId)) {
       const device = await this.deviceRepository.create(data.device);
 
@@ -79,7 +79,7 @@ export class DevicesService {
     }
   }
 
-  async abortNewDevice(data: Pick<NewDeviceData, 'clientId'>): Promise<string> {
+  public async abortNewDevice(data: Pick<NewDeviceData, 'clientId'>): Promise<string> {
     const device = this.pendingNewDevices.get(data.clientId);
 
     if (device) {
@@ -89,7 +89,7 @@ export class DevicesService {
     return 'aborted';
   }
 
-  async confirmNewDevice(data: Pick<NewDeviceData, 'clientId'>): Promise<string> {
+  public async confirmNewDevice(data: Pick<NewDeviceData, 'clientId'>): Promise<string> {
     const device = this.pendingNewDevices.get(data.clientId);
 
     if (device) {
@@ -105,11 +105,11 @@ export class DevicesService {
     return 'added';
   }
 
-  async getDevice(id: string): Promise<Device> {
+  public async getDevice(id: string): Promise<Device> {
     return this.deviceRepository.findById(id);
   }
 
-  async updateDevice(id: string, deviceDto: CreateDeviceDto): Promise<Device> {
+  public async updateDevice(id: string, deviceDto: CreateDeviceDto): Promise<Device> {
     const newDeviceProperties = Object.entries(deviceDto).filter(([_, val]) => val !== undefined);
     const newDevice = Object.fromEntries(newDeviceProperties) as Device;
 
@@ -124,11 +124,11 @@ export class DevicesService {
     return this.deviceRepository.updateById(id, newDevice);
   }
 
-  async setDeviceStatus(deviceTopic: string, status: boolean): Promise<Device> {
+  public async setDeviceStatus(deviceTopic: string, status: boolean): Promise<Device> {
     return this.deviceRepository.updateProperty(deviceTopic, 'online', status);
   }
 
-  async removeDevice(id: string): Promise<string> {
+  public async removeDevice(id: string): Promise<string> {
     const device = await this.deviceRepository.findById(id);
 
     await this.execCommand('Reset', '1', id);
@@ -148,14 +148,14 @@ export class DevicesService {
     return 'ok';
   }
 
-  async getDevicesElements(): Promise<DeviceElements[]> {
+  public async getDevicesElements(): Promise<DeviceElements[]> {
     const elements = await this.deviceRepository.getElements();
     elements.forEach((element, i, arr) => (arr[i] = { ...element, name: NAMES[element.name] }));
 
     return elements;
   }
 
-  async getDevices(): Promise<Device[]> {
+  public async getDevices(): Promise<Device[]> {
     const list = await this.deviceRepository.getAll();
 
     list.forEach(
@@ -170,7 +170,7 @@ export class DevicesService {
     return list;
   }
 
-  async getElementData(
+  public async getElementData(
     deviceId: string,
     element: string,
     period: Period,
@@ -211,14 +211,14 @@ export class DevicesService {
     return message;
   }
 
-  async saveMessage(msg: Partial<StateMsg>, deviceTopic: string): Promise<void> {
+  public async saveMessage(msg: Partial<StateMsg>, deviceTopic: string): Promise<void> {
     const messages: MessageData[] = [];
     Object.entries(msg).forEach(([key, val]) => messages.push({ name: key, value: val }));
 
     await this.deviceRepository.replaceMesage(deviceTopic, messages);
   }
 
-  async saveDataMessage(msg: SensorMessage, deviceTopic: string, gpio: string): Promise<void> {
+  public async saveDataMessage(msg: SensorMessage, deviceTopic: string, gpio: string): Promise<void> {
     let data: Partial<DataI>;
     let lastMessage: MessageData[] = [];
 
@@ -244,7 +244,7 @@ export class DevicesService {
     this.amqpService.publish('amq.topic', `cmnd.${deviceTopic}.${cmd}`, Buffer.from(value));
   }
 
-  async listenElement(topicId: string, gpio: string, element: string): Promise<Observable<string | number>> {
+  public async listenElement(topicId: string, gpio: string, element: string): Promise<Observable<string | number>> {
     interface ElementMsg {
       StatusSNS: SensorMessage;
     }
@@ -269,7 +269,7 @@ export class DevicesService {
     });
   }
 
-  async listenWiFi(topicId: string): Promise<Observable<WiFi>> {
+  public async listenWiFi(topicId: string): Promise<Observable<WiFi>> {
     const { queue, consumerTag } = await this.newQueue('amq.topic', `stat.${topicId}.RESULT`);
 
     return new Observable((observer) => {
@@ -292,21 +292,11 @@ export class DevicesService {
     });
   }
 
-  private async newQueue(exchange: string, pattern: string) {
-    const queue = uuidv4();
-    const consumerTag = uuidv4();
-
-    await this.amqpService.channel.assertQueue(queue, { autoDelete: true, durable: false });
-    await this.amqpService.channel.bindQueue(queue, exchange, pattern);
-
-    return { queue, consumerTag };
-  }
-
-  getSensorInterval(id: string): SensorInterval {
+  public getSensorInterval(id: string): SensorInterval {
     return this.sensorsIntervals.find((interval) => interval.id === id);
   }
 
-  resetSensorInterval(id: string, interval: number, gpio: string): void {
+  public resetSensorInterval(id: string, interval: number, gpio: string): void {
     this.sensorsIntervals = this.sensorsIntervals.filter((item) => item.id !== id);
     this.sensorsIntervals.push(new SensorInterval(interval, String(id), gpio));
   }
@@ -317,5 +307,15 @@ export class DevicesService {
     this.sensorsIntervals = devices
       .filter((device) => device.type === 'sensor')
       .map((item) => new SensorInterval(item.interval, String(item._id), item.gpio));
+  }
+
+  private async newQueue(exchange: string, pattern: string) {
+    const queue = uuidv4();
+    const consumerTag = uuidv4();
+
+    await this.amqpService.channel.assertQueue(queue, { autoDelete: true, durable: false });
+    await this.amqpService.channel.bindQueue(queue, exchange, pattern);
+
+    return { queue, consumerTag };
   }
 }
