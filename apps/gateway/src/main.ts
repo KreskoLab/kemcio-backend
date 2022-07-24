@@ -23,6 +23,6 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
-  await app.listen(8000);
+  await app.listen(configService.get<string>('PORT') || 8000);
 }
 bootstrap();
