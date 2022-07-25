@@ -228,8 +228,8 @@ export class DevicesService {
         data = { temperature: msg.DHT11.Temperature, humidity: msg.DHT11.Temperature };
 
         lastMessage = [
-          { name: NAMES[NAMES.TEMPERATURE], value: msg.DHT11.Temperature },
-          { name: NAMES[NAMES.HUMIDITY], value: msg.DHT11.Humidity },
+          { name: this.getEnumKeyByValue(NAMES, NAMES.TEMPERATURE), value: msg.DHT11.Temperature },
+          { name: this.getEnumKeyByValue(NAMES, NAMES.HUMIDITY), value: msg.DHT11.Humidity },
         ];
 
         break;
@@ -318,5 +318,10 @@ export class DevicesService {
     await this.amqpService.channel.bindQueue(queue, exchange, pattern);
 
     return { queue, consumerTag };
+  }
+
+  private getEnumKeyByValue<T extends { [index: string]: string }>(myEnum: T, enumValue: string): keyof T | null {
+    const keys = Object.keys(myEnum).filter((x) => myEnum[x] == enumValue);
+    return keys.length > 0 ? keys[0] : null;
   }
 }
