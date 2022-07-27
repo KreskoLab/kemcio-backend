@@ -63,7 +63,7 @@ export class DevicesService {
 
       this.pendingNewDevices.set(data.clientId, device);
 
-      const flashCmd = `Backlog WebServer 0; Topic ${device._id}; SSID1 ${data.metadata.ssid}; Password1 ${data.metadata.pass}; SetOption65 1; SetOption1 1;`;
+      const flashCmd = `Backlog WebServer 0; Topic ${device._id}; SSID1 ${data.metadata.ssid}; Password1 ${data.metadata.pass}; SetOption65 1; SetOption1 1; SetOption59 1;`;
       const mqttHost = `MqttHost ${this.configService.get('MQTT_HOST')};`;
       const mqttPort = `MqttPort ${this.configService.get('MQTT_PORT')};`;
       const mqttUser = `MqttUser ${this.configService.get('MQTT_USER')};`;
