@@ -8,8 +8,7 @@ import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const appContext = await NestFactory.createApplicationContext(AppModule);
-  const configService = appContext.get(ConfigService);
+  const configService = app.get<ConfigService>(ConfigService);
 
   app.use(helmet());
 
