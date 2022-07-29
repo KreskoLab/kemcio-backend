@@ -30,11 +30,11 @@ import { Device } from 'apps/devices/src/schemas/device.schema';
 import { Response } from 'express';
 import { createReadStream } from 'fs';
 import { resolve } from 'path';
-import { firstValueFrom, Observable } from 'rxjs';
-import { SseService } from '../sse.service';
-import { v4 as uuid } from 'uuid';
+import { firstValueFrom, map, Observable } from 'rxjs';
+import { EventsService } from '../events.service';
 import { AuthGuard } from '../guards/auth.guard';
 import { AdminGuard } from '../guards/admin.guard';
+import { randomUUID } from 'crypto';
 
 @Controller('devices')
 export class DevicesController {
@@ -46,7 +46,7 @@ export class DevicesController {
     @Inject(DEVICES_ROUTES.WIFI) private readonly devicesWiFiService: ClientProxy,
     @Inject(DEVICES_ROUTES.UPDATE) private readonly devicesUpdateService: ClientProxy,
     @Inject(DEVICES_ROUTES.REMOVE) private readonly devicesRemoveService: ClientProxy,
-    private readonly sseService: SseService,
+    private readonly eventsService: EventsService,
   ) {}
 
   @Get()
@@ -82,13 +82,13 @@ export class DevicesController {
   }
 
   @Sse('status')
-  async deviceStatis(@Res() response: Response): Promise<Observable<MessageEvent>> {
-    const observerId = uuid();
+  async devicesStatus(@Res() response: Response): Promise<Observable<MessageEvent>> {
+    const observerId = randomUUID();
 
-    response.socket.on('end', () => this.sseService.remove(observerId));
+    response.socket.on('end', () => this.eventsService.remove(observerId));
 
-    this.sseService.add(observerId);
-    return this.sseService.send();
+    const event = this.eventsService.add(observerId);
+    return event.pipe(map((msg) => msg));
   }
 
   @Get(':id/wifi')

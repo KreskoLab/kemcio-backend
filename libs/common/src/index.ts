@@ -44,6 +44,7 @@ export * from './enums/routes/users';
 export * from './enums/routes/auth';
 export * from './enums/cmds/user';
 export * from './enums/cmds/auth';
+export * from './enums/cmds/devices';
 export * from './enums/gpio';
 
 export * from './rmq/rmq.module';

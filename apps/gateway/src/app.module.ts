@@ -7,8 +7,8 @@ import { AuthController } from './controllers/auth.controller';
 import { DevicesController } from './controllers/devices.controller';
 import { UsersController } from './controllers/users.controller';
 import { WorkflowsController } from './controllers/workflows.controller';
+import { EventsService } from './events.service';
 import { DevicesGateway } from './gateways/device.gateway';
-import { SseService } from './sse.service';
 
 @Module({
   imports: [
@@ -38,7 +38,7 @@ import { SseService } from './sse.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [AppService, SseService, DevicesGateway],
+  providers: [AppService, EventsService, DevicesGateway],
   controllers: [AuthController, UsersController, DevicesController, WorkflowsController],
 })
 export class AppModule {}

@@ -7,6 +7,7 @@ export enum DEVICES_ROUTES {
   UPDATE = 'devices-update',
   REMOVE = 'devices-remove',
   OBSERVER = 'devices-observer',
+  OBSERVERS = 'devices-observers',
   ONLINE = 'devices-online',
   SENSORS = 'devices-sensors',
   RESULTS = 'devices-results',
