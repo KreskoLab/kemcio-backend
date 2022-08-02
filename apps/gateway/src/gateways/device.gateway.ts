@@ -5,7 +5,7 @@ import { WebSocketGateway, MessageBody, SubscribeMessage } from '@nestjs/websock
 import { NewDeviceData, NewDeviceId } from '@app/common';
 import { firstValueFrom } from 'rxjs';
 
-@WebSocketGateway(8080, { path: '/device' })
+@WebSocketGateway({ path: '/device' })
 export class DevicesGateway {
   constructor(@Inject('devices-new') private readonly devicesNewService: ClientProxy) {}
 
