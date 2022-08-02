@@ -2,7 +2,6 @@ import { AUTH_ROUTES, DEVICES_ROUTES, RmqModule, USERS_ROUTES, WORKFLOWS_ROUTES 
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AppService } from './app.service';
 import { AuthController } from './controllers/auth.controller';
 import { DevicesController } from './controllers/devices.controller';
 import { UsersController } from './controllers/users.controller';
@@ -38,7 +37,7 @@ import { DevicesGateway } from './gateways/device.gateway';
       inject: [ConfigService],
     }),
   ],
-  providers: [AppService, EventsService, DevicesGateway],
+  providers: [EventsService, DevicesGateway],
   controllers: [AuthController, UsersController, DevicesController, WorkflowsController],
 })
 export class AppModule {}
